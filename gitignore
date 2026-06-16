@@ -1,0 +1,74 @@
+# Python
+venv/
+**/venv/
+__pycache__/
+*.pyc
+
+# Node
+node_modules/
+**/node_modules/
+
+# Env
+.env
+**/.env
+
+# Misc
+bfg.jar
+cat > .gitignore << 'EOF'
+# Dependencies
+node_modules/
+package-lock.json
+yarn.lock
+
+# Python
+ai_backend/__pycache__/
+ai_backend/venv/
+ai_backend/env/
+__pycache__/
+*.py[cod]
+*.pyc
+
+# Environment files
+.env
+.env.local
+.env.*.local
+*.env
+ai_backend/.env
+
+# Audio files (these are large and shouldn't be in git)
+ai_backend/static/audio/*.mp3
+ai_backend/static/audio/*.wav
+ai_backend/static/audio/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Build
+dist/
+build/
+.next/
+out/
+
+# Logs
+*.log
+logs/
+
+# Uploads
+uploads/
+temp/
+tmp/
+
+# BFG jar (not needed in repo)
+bfg.jar
+
+# Gitignore backup
+gitignore
+EOF
