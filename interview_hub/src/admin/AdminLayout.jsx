@@ -1,6 +1,8 @@
 import React from 'react';
 import AdminSidebar from './AdminSidebar';
 import AdminHeader from './AdminHeader';
+import BASE_URL from '../config';
+
 
 const AdminLayout = ({ children }) => {
   return (

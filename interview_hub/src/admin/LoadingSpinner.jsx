@@ -1,5 +1,7 @@
 // src/admin/LoadingSpinner.jsx
 import React from 'react';
+import BASE_URL from '../config';
+
 
 const LoadingSpinner = () => {
   return (

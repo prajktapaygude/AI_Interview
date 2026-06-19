@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useAdmin } from './AdminContext';
 import LoadingSpinner from './LoadingSpinner';
+import BASE_URL from '../config';
 
 // ==================== MOCK MODE ====================
 const USE_MOCK = false;
@@ -135,7 +136,7 @@ const getApiBaseUrl = () => {
   if (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_URL) {
     return import.meta.env.VITE_API_URL;
   }
-  return 'http://localhost:5000/api';
+  return `${BASE_URL}/api`;
 };
 const API_BASE_URL = getApiBaseUrl();
 // ====================================================

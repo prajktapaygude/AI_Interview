@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { verifyEmail, storeUserData } from './services/authApi';   // ← changed from '../services/authApi'
-import { useTheme } from './ThemeContext';                         // ← changed from '../ThemeContext'
+import { useTheme } from './ThemeContext';  
+import BASE_URL from './config';
+                       // ← changed from '../ThemeContext'
 
 const VerifyEmail = () => {
   const [searchParams] = useSearchParams();

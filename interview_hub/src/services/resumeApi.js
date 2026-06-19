@@ -44,7 +44,7 @@
 
 
 const API_BASE_URL = "http://localhost:5000/api";
-const AI_BACKEND_URL = "http://localhost:8000";  // Add this
+const AI_BACKEND_URL = `${BASE_URL}`;  // Add this
 
 export const uploadResume = async (file) => {
   const formData = new FormData();

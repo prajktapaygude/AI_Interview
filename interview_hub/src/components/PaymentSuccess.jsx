@@ -84,6 +84,7 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import BASE_URL from '../config';
 
 const PaymentSuccess = () => {
   const [searchParams] = useSearchParams();
@@ -108,7 +109,7 @@ const PaymentSuccess = () => {
         const token = localStorage.getItem('token');
         
         // Verify payment
-        const res = await axios.post('http://localhost:5000/api/payment/verify', {
+        const res = await axios.post(`${BASE_URL}/api/payment/verify`, {
           txnid,
           status: 'success'
         }, {
@@ -117,7 +118,7 @@ const PaymentSuccess = () => {
         
         if (res.data.success) {
           // 🔥 Refresh user data to get updated membership
-          const profileRes = await axios.get('http://localhost:5000/api/auth/profile', {
+          const profileRes = await axios.get(`${BASE_URL}/api/auth/profile`, {
             headers: { Authorization: `Bearer ${token}` }
           });
           
@@ -126,7 +127,7 @@ const PaymentSuccess = () => {
           localStorage.setItem('user', JSON.stringify(updatedUser));
           
           // Also refresh subscription status
-          const subscriptionRes = await axios.post('http://localhost:5000/api/payment/refresh-membership', {}, {
+          const subscriptionRes = await axios.post(`${BASE_URL}/api/payment/refresh-membership`, {}, {
             headers: { Authorization: `Bearer ${token}` }
           });
           

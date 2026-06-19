@@ -575,6 +575,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from "./ThemeContext";
+import BASE_URL from './config';
 
 const Feedback = () => {
   const navigate = useNavigate();
@@ -650,7 +651,7 @@ const Feedback = () => {
     setServerError('');
 
     try {
-      const response = await fetch('http://localhost:5000/api/feedback', {
+      const response = await fetch(`${BASE_URL}/api/feedback`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

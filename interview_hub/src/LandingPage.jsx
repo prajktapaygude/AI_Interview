@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Typewriter } from 'react-simple-typewriter';
 import ChatWidget from "./ChatWidget";
+import BASE_URL from "./config";
 
 function LandingPage() {
   const [scrolled, setScrolled] = useState(false);
@@ -899,7 +900,7 @@ function LandingPage() {
 
           <div className="pt-6 border-t-2 border-white/30 dark:border-gray-400 flex flex-wrap justify-between items-center gap-3">
             <p className="text-white dark:text-gray-900 text-sm">
-              © 2026 AI Interview Mentor. All rights reserved.
+              © 2026 SPCL Infotech Services and Solutions Pvt. Ltd. All rights reserved.
             </p>
             <div className="flex gap-5">
               <Link to="/" className="text-white dark:text-gray-900 hover:text-accent transition-colors text-sm">Privacy Policy</Link>

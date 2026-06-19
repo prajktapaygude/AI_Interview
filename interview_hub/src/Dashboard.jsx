@@ -981,6 +981,7 @@ import { getUserStats } from './services/interviewApi';
 import { useTheme } from "./ThemeContext";
 import ThemeToggle from "./ThemeToggle";
 import axios from 'axios';
+import BASE_URL from './config';
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -1049,7 +1050,7 @@ const Dashboard = () => {
   const fetchAvailablePlans = async () => {
     try {
       setLoadingPlans(true);
-      const response = await axios.get('http://localhost:5000/api/plans/public/all');
+      const response = await axios.get(`${BASE_URL}/api/plans/public/all`);
       
       if (response.data && response.data.success) {
         setAvailablePlans(response.data.plans);
@@ -1125,12 +1126,12 @@ const Dashboard = () => {
       if (!token) return;
       
       // Fetch user profile (may contain membership string)
-      const profileRes = await axios.get('http://localhost:5000/api/auth/profile', {
+      const profileRes = await axios.get(`${BASE_URL}/api/auth/profile`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
       // Fetch subscription info (contains expiry date and plan)
-      const subsRes = await axios.get('http://localhost:5000/api/jobs/subscription-info', {
+      const subsRes = await axios.get(`${BASE_URL}/api/jobs/subscription-info`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
@@ -1206,7 +1207,7 @@ const Dashboard = () => {
         return;
       }
       
-      const response = await fetch('http://localhost:5000/api/interview/my-sessions', {
+      const response = await fetch(`${BASE_URL}/api/interview/my-sessions`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,

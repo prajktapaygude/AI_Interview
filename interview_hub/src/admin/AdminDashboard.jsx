@@ -4,6 +4,7 @@ import { useRef } from 'react';
 import { useAdmin } from './AdminContext';
 import ThemeToggle from '../ThemeToggle';
 import LoadingSpinner from './LoadingSpinner';
+import BASE_URL from '../config';
 
 // Socket.io client
 import io from 'socket.io-client';
@@ -13,7 +14,7 @@ const getApiBaseUrl = () => {
   if (typeof process !== 'undefined' && process.env && process.env.REACT_APP_API_URL) {
     return process.env.REACT_APP_API_URL;
   }
-  return 'http://localhost:5000/api';
+  return `${BASE_URL}/api`;
 };
 
 const API_BASE_URL = getApiBaseUrl();
@@ -148,7 +149,7 @@ const AdminDashboard = () => {
     if (!token) return;
 
     if (!socketRef.current) {
-      socketRef.current = io("http://localhost:5000");
+      socketRef.current = io(`${BASE_URL}`);
 
       socketRef.current.on("statsUpdated", () => {
         loadDashboardData();

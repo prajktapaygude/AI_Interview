@@ -862,6 +862,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { textToSpeech } from "../services/aiApi";
+import BASE_URL from "../config";
 
 const ResumeInterview = () => {
   const location = useLocation();
@@ -1122,7 +1123,7 @@ const ResumeInterview = () => {
   const evaluateCurrentAnswer = async (questionText, answerText) => {
     try {
       const userId = localStorage.getItem("userId") || "guest";
-      const response = await fetch("http://localhost:8000/evaluate", {
+      const response = await fetch(`${BASE_URL}/evaluate`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -1329,7 +1330,7 @@ const ResumeInterview = () => {
         totalQuestionsAnswered: allAnswers.filter(a => a).length,
       };
 
-      await fetch("http://localhost:5000/api/interview/save-resume-session", {
+      await fetch(`${BASE_URL}/api/interview/save-resume-session`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify(payload),

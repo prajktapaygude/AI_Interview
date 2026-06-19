@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-
+import BASE_URL from "../config";
 const JobSearch = () => {
   const [jobs, setJobs] = useState([]);
   const [skills, setSkills] = useState("");
@@ -52,7 +52,7 @@ const JobSearch = () => {
 
   const fetchSuggestions = async () => {
     try {
-      const res = await fetch('http://localhost:5000/api/jobs/suggestions');
+      const res = await fetch(`${BASE_URL}/api/jobs/suggestions`);
       if (res.ok) {
         const data = await res.json();
         setSuggestions(data);
@@ -89,7 +89,7 @@ const JobSearch = () => {
     setSearchSummary(null);
 
     try {
-      const url = `http://localhost:5000/api/jobs?skills=${encodeURIComponent(skills.trim())}&location=${encodeURIComponent(location.trim())}`;
+      const url = `${BASE_URL}/api/jobs?skills=${encodeURIComponent(skills.trim())}&location=${encodeURIComponent(location.trim())}`;
       console.log('Fetching URL:', url);
       
       const res = await fetch(url, {

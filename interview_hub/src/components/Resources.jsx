@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import debounce from 'lodash/debounce';
+import BASE_URL from "../config";
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || `${BASE_URL}/api`;
 
 const Resources = () => {
   const [resources, setResources] = useState([]);

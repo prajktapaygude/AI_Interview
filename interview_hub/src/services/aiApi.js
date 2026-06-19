@@ -1,5 +1,6 @@
+import BASE_URL from "../config"
 // aiApi.js
-const API_BASE = "http://localhost:8000";
+const API_BASE = `${BASE_URL}`;
 
 /**
  * Generate a set of initial questions (used in batch mode, but kept for compatibility)

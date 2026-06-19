@@ -2,8 +2,12 @@
 import React, { useState, useContext } from 'react';
 import axios from 'axios';
 import { useTheme } from './ThemeContext'; // Adjust path as needed
+//import BASE_URL from "./config";
+import BASE_URL from "./config";
 
-const API_URL = 'http://localhost:5000/api/chat';
+
+
+const API_URL = `${BASE_URL}/api/chat`;
 
 const ChatWidget = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -14,7 +18,8 @@ const ChatWidget = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { isDarkMode } = useTheme(); // Get dark mode state from context
 
-  const sendMessage = async () => {
+  const sendMessage = async () 
+  => {
     if (!input.trim()) return;
     
     const userMsg = { role: 'user', content: input };

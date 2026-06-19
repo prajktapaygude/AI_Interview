@@ -3,13 +3,14 @@ import { useNavigate } from 'react-router-dom';
 import { useAdmin } from './AdminContext';
 import LoadingSpinner from './LoadingSpinner';
 import { useTheme } from '../ThemeContext';
+import BASE_URL from '../config';
 
 // ✅ API URL
 const getApiBaseUrl = () => {
   if (import.meta?.env?.VITE_API_URL) {
     return import.meta.env.VITE_API_URL;
   }
-  return import.meta.env.DEV ? 'http://localhost:5000/api' : '/api';
+  return import.meta.env.DEV ? `${BASE_URL}/api` : '/api';
 };
 
 const API_BASE_URL = getApiBaseUrl();

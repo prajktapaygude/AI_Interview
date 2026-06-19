@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAdmin } from '../admin/AdminContext';
 import { fetchAvailableTests } from '../services/quizApi';
 import LoadingSpinner from './LoadingSpinner';
+import BASE_URL from '../config';
 
 const TestDashboard = () => {
   const navigate = useNavigate();

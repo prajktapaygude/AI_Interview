@@ -1,6 +1,7 @@
 // frontend/src/components/ForgotPassword.jsx
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import BASE_URL from "../config"
 import axios from 'axios';
 
 const ForgotPassword = () => {
@@ -23,7 +24,7 @@ const ForgotPassword = () => {
     setMessage('');
     
     try {
-      const response = await axios.post('http://localhost:5000/api/auth/forgot-password', { email });
+      const response = await axios.post(`${BASE_URL}/api/auth/forgot-password`, { email });
       
       if (response.data.success) {
         setSubmitted(true);

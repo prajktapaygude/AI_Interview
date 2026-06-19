@@ -988,6 +988,7 @@ import {
   textToSpeech,
   analyzeReport
 } from "../services/aiApi";
+import BASE_URL from "../config";
 
 const LiveInterview = ({ interviewData, user, onFinish }) => {
   // Refs
@@ -1327,7 +1328,7 @@ const LiveInterview = ({ interviewData, user, onFinish }) => {
     let evaluation = null;
     try {
       const userId = user?.id || 'guest';
-      const evalResponse = await fetch('http://localhost:8000/evaluate', {
+      const evalResponse = await fetch(`${BASE_URL}/evaluate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -1479,7 +1480,7 @@ const LiveInterview = ({ interviewData, user, onFinish }) => {
         duration: durationSeconds,
         totalQuestionsAnswered: evaluatedAnswers.length
       };
-      const response = await fetch('http://localhost:5000/api/interview/save-session', {
+      const response = await fetch(`${BASE_URL}/api/interview/save-session`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify(payload)
@@ -1496,7 +1497,7 @@ const LiveInterview = ({ interviewData, user, onFinish }) => {
       const answersList = allAnswers.map(a => a.answer);
       let evaluations = [];
       try {
-        const response = await fetch('http://localhost:8000/batch-evaluate', {
+        const response = await fetch('/batch-evaluate', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({

@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAdmin } from '../context/AdminContext';
+import BASE_URL from '../config';
 
 const AdminSidebar = () => {
   const navigate = useNavigate();

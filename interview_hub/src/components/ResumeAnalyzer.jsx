@@ -2,8 +2,9 @@ import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useTheme } from "../ThemeContext";
+import BASE_URL from "../config";
 
-const API_BASE_URL = 'http://localhost:5000/api';
+const API_BASE_URL = `${BASE_URL}/api`;
 
 // ==================== RESUME SUGGESTIONS COMPONENT (themed) ====================
 const ResumeSuggestions = ({ suggestions, score, missingSkills }) => {
@@ -395,7 +396,7 @@ const ResumeAnalyzer = () => {
       }, 500);
       
       const token = localStorage.getItem('token');
-      const response = await fetch("http://localhost:5000/api/upload-resume", {
+      const response = await fetch(`${BASE_URL}/api/upload-resume`, {
         method: "POST",
         headers: { 'Authorization': token ? `Bearer ${token}` : '' },
         body: formData,

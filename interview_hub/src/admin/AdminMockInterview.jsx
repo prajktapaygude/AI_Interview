@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import AdminInterviewSessions from './AdminInterviewSessions';
 import AdminInterviewConfig from './AdminInterviewConfig';
 import AdminInterviewAnalytics from './AdminInterviewAnalytics';
+import BASE_URL from '../config';
 
 const AdminMockInterview = () => {
   const navigate = useNavigate();

@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import BASE_URL from "../config";
 
 const SystemCheck = () => {
   const videoRef = useRef(null);

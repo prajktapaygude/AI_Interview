@@ -5,8 +5,9 @@ import LoadingSpinner from './LoadingSpinner';
 import BackButton from '../components/BackButton';
 import AccessDenied from './AccessDenied';
 import io from 'socket.io-client';
+import BASE_URL from "../config"
 
-const API_BASE_URL = 'http://localhost:5000/api';
+const API_BASE_URL = `${BASE_URL}/api`;
 
 const AdminAdmins = () => {
   const navigate = useNavigate();

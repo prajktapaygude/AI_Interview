@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useTheme } from '../ThemeContext';
+import BASE_URL from '../config';
 
 const PlanManagement = () => {
   const { isDarkMode } = useTheme();
@@ -32,7 +33,7 @@ const PlanManagement = () => {
       console.log('Fetching plans from public endpoint...');
       
       // CHANGE THIS LINE - Use public endpoint
-      const res = await axios.get('http://localhost:5000/api/plans/public/all');
+      const res = await axios.get(`${BASE_URL}/api/plans/public/all`);
       
       if (res.data.success) {
         setPlans(res.data.plans);
@@ -47,7 +48,7 @@ const PlanManagement = () => {
         setError('Authentication failed. Using public endpoint...');
         // Try fallback to public endpoint if needed
         try {
-          const fallbackRes = await axios.get('http://localhost:5000/api/plans');
+          const fallbackRes = await axios.get(`${BASE_URL}/api/plans`);
           if (fallbackRes.data.success) {
             setPlans(fallbackRes.data.plans);
             setError(null);
@@ -79,10 +80,10 @@ const PlanManagement = () => {
       };
 
       if (editingPlan) {
-        await axios.put(`http://localhost:5000/api/plans/${editingPlan._id}`, planData);
+        await axios.put(`${BASE_URL}/api/plans/${editingPlan._id}`, planData);
         alert('Plan updated successfully');
       } else {
-        await axios.post('http://localhost:5000/api/plans', planData);
+        await axios.post(`${BASE_URL}/api/plans`, planData);
         alert('Plan created successfully');
       }
 
@@ -100,7 +101,7 @@ const PlanManagement = () => {
     if (!window.confirm('Are you sure you want to delete this plan?')) return;
 
     try {
-      await axios.delete(`http://localhost:5000/api/plans/${id}`);
+      await axios.delete(`${BASE_URL}/api/plans/${id}`);
       alert('Plan deleted successfully');
       fetchPlans();
     } catch (err) {

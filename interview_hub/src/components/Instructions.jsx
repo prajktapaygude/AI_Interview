@@ -1,6 +1,7 @@
 import React from "react";
 import { useTheme } from "../ThemeContext";
 import ThemeToggle from "../ThemeToggle";
+import BASE_URL from "../config";
 const Instructions = ({ interviewData, onStart }) => {
   const { isDarkMode } = useTheme();
 

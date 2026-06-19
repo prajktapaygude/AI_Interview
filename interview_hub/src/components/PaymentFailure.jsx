@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
+import BASE_URL from '../config';
 
 const PaymentFailure = () => {
   const [searchParams] = useSearchParams();

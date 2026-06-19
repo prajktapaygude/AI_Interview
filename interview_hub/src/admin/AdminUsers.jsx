@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useAdmin } from './AdminContext';
 import LoadingSpinner from './LoadingSpinner';
 import BackButton from '../components/BackButton';
+import BASE_URL from '../config';
 
 // ==================== MOCK MODE ====================
 const USE_MOCK = false;
@@ -81,7 +82,7 @@ const getApiBaseUrl = () => {
   if (typeof process !== 'undefined' && process.env && process.env.REACT_APP_API_URL) {
     return process.env.REACT_APP_API_URL;
   }
-  return 'http://localhost:5000/api';
+  return `${BASE_URL}/api`;
 };
 
 const API_BASE_URL = getApiBaseUrl();

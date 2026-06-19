@@ -3,6 +3,7 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { fetchQuestionsByLanguage, languageCategories, fetchAdminTest, submitAdminTest } from '../services/quizApi';
 import { useTheme } from '../ThemeContext';
 import { useAdmin } from '../admin/AdminContext'; // Use your existing admin context for user token
+import BASE_URL from '../config';
 
 const QuizPage = () => {
   const location = useLocation();

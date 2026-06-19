@@ -1,5 +1,6 @@
 
 
+
 // import React, { useState, useEffect } from 'react';
 // import { useNavigate } from 'react-router-dom';
 // import { useTheme } from "./ThemeContext";
@@ -576,6 +577,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from "./ThemeContext";
+import BASE_URL from './config';
 
 const Contact = () => {
   const navigate = useNavigate();
@@ -641,8 +643,8 @@ const Contact = () => {
     setErrorMsg('');
 
     try {
-      const response = await fetch('http://localhost:5000/api/contact', {
-        method: 'POST',
+const response = await fetch(`${BASE_URL}/api/contact`, {
+  method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },

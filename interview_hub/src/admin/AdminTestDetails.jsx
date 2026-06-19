@@ -3,8 +3,9 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useAdmin } from './AdminContext';
 import LoadingSpinner from './LoadingSpinner';
 import BackButton from '../components/BackButton';
+import BASE_URL from '../config';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || `${BASE_URL}/api`;
 
 const AdminTestDetails = () => {
   const { testId } = useParams();

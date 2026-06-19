@@ -338,6 +338,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { loginUser, storeUserData, getGoogleAuthURL, resendVerification } from './services/authApi';
 import { useTheme } from "./ThemeContext";
+import BASE_URL from './config';
 
 const LoginPage = () => {
   const navigate = useNavigate();

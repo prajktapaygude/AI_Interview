@@ -1,5 +1,6 @@
 import React from 'react';
 import { useTheme } from './ThemeContext';
+import BASE_URL from './config';
 
 const ThemeToggle = () => {
   const { isDarkMode, toggleTheme } = useTheme();

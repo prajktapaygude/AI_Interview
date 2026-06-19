@@ -2,6 +2,7 @@ import React, { useRef } from "react";
 import { useTheme } from "../ThemeContext";
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
+import BASE_URL from "../config";
 
 const InterviewSummary = ({ report }) => {
   const { isDarkMode } = useTheme();

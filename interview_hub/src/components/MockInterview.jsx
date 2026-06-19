@@ -6,6 +6,7 @@ import InterviewSummary from "./InterviewSummary";
 import { useTheme } from "../ThemeContext";
 import ThemeToggle from "../ThemeToggle";
 import { getStoredUser } from "../services/authApi";
+import BASE_URL from "../config";
 
 const MockInterview = () => {
   const { isDarkMode } = useTheme()

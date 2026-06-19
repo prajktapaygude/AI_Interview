@@ -1,5 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import BASE_URL from '../config';
+
 
 const BackButton = ({ fallbackPath }) => {
   const navigate = useNavigate();

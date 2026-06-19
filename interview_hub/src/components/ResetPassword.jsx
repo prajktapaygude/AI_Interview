@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import axios from 'axios';
+import BASE_URL from '../config';
 
 const ResetPassword = () => {
   const [searchParams] = useSearchParams();
@@ -28,7 +29,7 @@ const ResetPassword = () => {
     }
     
     try {
-      const response = await axios.get(`http://localhost:5000/api/auth/verify-reset-token/${token}`);
+      const response = await axios.get(`${BASE_URL}/api/auth/verify-reset-token/${token}`);
       
       if (response.data.success) {
         setValidToken(true);
@@ -66,7 +67,7 @@ const ResetPassword = () => {
     setMessage('');
     
     try {
-      const response = await axios.post('http://localhost:5000/api/auth/reset-password', {
+      const response = await axios.post(`${BASE_URL}/api/auth/reset-password`, {
         token,
         newPassword: password
       });

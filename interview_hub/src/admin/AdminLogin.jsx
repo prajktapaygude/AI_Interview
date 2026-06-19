@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTheme } from "../ThemeContext";
 import { useAdmin } from "./AdminContext";
+import BASE_URL from "../config";
 
 function AdminLogin() {
   const navigate = useNavigate();
@@ -30,7 +31,7 @@ function AdminLogin() {
     setError("");
 
     try {
-      const response = await fetch("http://localhost:5000/api/admin/auth/login", {
+      const response = await fetch(`${BASE_URL}/api/admin/auth/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json"

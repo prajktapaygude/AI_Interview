@@ -577,6 +577,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { registerUser, getGoogleAuthURL } from './services/authApi';
 import { useTheme } from "./ThemeContext";
+import BASE_URL from './config';
 
 const SignUp = () => {
   const navigate = useNavigate();
@@ -611,7 +612,7 @@ const SignUp = () => {
         
         // Fetch user profile
         try {
-          const response = await fetch('http://localhost:5000/api/auth/profile', {
+          const response = await fetch(`${BASE_URL}/api/auth/profile`, {
             headers: { 'Authorization': `Bearer ${token}` }
           });
           const data = await response.json();

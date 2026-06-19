@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useTheme } from "../ThemeContext";
+import BASE_URL from "../config";
 
 // ==================== MOCK MODE ====================
 const USE_MOCK = false; // Set to false when backend is ready
@@ -97,7 +98,7 @@ const getApiBaseUrl = () => {
   if (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_URL) {
     return import.meta.env.VITE_API_URL;
   }
-  return 'http://localhost:5000/api';
+  return `${BASE_URL}/api`;
 };
 const API_BASE_URL = getApiBaseUrl();
 // ====================================================

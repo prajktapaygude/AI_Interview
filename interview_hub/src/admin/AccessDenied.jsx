@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAdmin } from './AdminContext';
+import BASE_URL from "../config"
 
 const AccessDenied = () => {
   const navigate = useNavigate();

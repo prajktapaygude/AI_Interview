@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import ThemeToggle from '../../ThemeToggle';
 import { useAdmin } from '../context/AdminContext';
 import AdminSidebar from './AdminSidebar';   // make sure this path is correct
+import BASE_URL from "../config"
 
 const AdminHeader = () => {
   const navigate = useNavigate();
