@@ -910,7 +910,7 @@ function LandingPage() {
         </div>
       </footer>
       
-       <ChatWidget />
+       {/* <ChatWidget /> */}
     </div>
   );
 }
