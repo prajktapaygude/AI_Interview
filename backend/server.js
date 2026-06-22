@@ -484,7 +484,6 @@
 //   process.exit(1);
 // });
 
-
 require('dotenv').config();
 console.log('🔍 ENVIRONMENT VARIABLES CHECK:');
 console.log('GEMINI_API_KEY:', process.env.GEMINI_API_KEY ? '✅ FOUND (starts with: ' + process.env.GEMINI_API_KEY.substring(0, 15) + '...)' : '❌ NOT FOUND');
@@ -526,7 +525,6 @@ const http = require("http");
 // CREATE APP FIRST
 // =======================
 const app = express();
-const AI_BACKEND_URL = process.env.AI_BACKEND_URL || `${BASE_URL}`;
 
 // =======================
 // DB CONNECTION
@@ -539,7 +537,7 @@ connectDB();
 const allowedOrigins = [
   'http://localhost:5173',                         // local development
   'https://ai-interview-two-kohl.vercel.app',     // your Vercel frontend
-  // add any other domains you need (e.g., staging)
+  // add any other domains you need
 ];
 
 app.use(cors({
@@ -593,19 +591,18 @@ app.use(session({
   }
 }));
 
-// ✅ Initialize Passport AFTER app is created
+// ✅ Initialize Passport
 initPassport();
 app.use(passport.initialize());
 app.use(passport.session());
 
 // CHATBOT ROUTES
 app.use('/api/chat', chatRoutes);
-//contact page routes
 app.use('/api/contact', contactRoutes);
-//feedback routes
 app.use('/api/feedback', feedbackRoutes);
+
 // =======================
-// ROUTES - ORDER MATTERS!
+// ROUTES
 // =======================
 
 // Health check endpoint
@@ -628,10 +625,10 @@ app.use('/api/auth', authRoutes);
 // Admin auth routes
 app.use("/api/admin/auth", adminAuthRoutes);
 
-// Subject routes (mounted at /api/admin)
+// Subject routes
 app.use("/api/admin", adminSubjectsRoutes);
 
-// Test routes (mounted at /api - handles both /api/admin/tests and /api/user/tests)
+// Test routes
 app.use("/api", testRoutes);
 
 // Existing admin routes
@@ -641,17 +638,12 @@ app.use("/api/admin", require('./routes/adminUsers'));
 app.use("/api/admin", require('./routes/adminAdmins'));
 app.use('/api', resumeAnalyzerRoutes);
 
-// ✅ INTERVIEW ROUTES
-console.log("🚀 adminInterviewSessionsRoutes:", adminInterviewRoutes);
-console.log("🚀 adminInterviewConfigRoutes:", adminInterviewConfigRoutes);
-
+// Interview routes
 app.use('/api/admin', adminAnalyticsRoutes);
-// Mount config routes (these handle /config, /categories, /levels, etc.)
 app.use('/api/admin/interview', adminInterviewConfigRoutes);
-
-// Mount sessions routes (these handle /sessions)
 app.use('/api/interview', saveInterviewRoutes);
 app.use('/api/admin/interview', adminInterviewRoutes);
+
 // Public resources
 app.use("/api/resources", publicResources);
 
@@ -670,8 +662,7 @@ app.get('/api/public/interview-config', async (req, res) => {
     let config = await InterviewConfig.findOne();
     
     if (!config) {
-      console.log('No config found in database, returning mock data');
-      // Return mock data from your MOCK_CONFIG
+      console.log('No config found, returning mock data');
       return res.json({
         categories: [
           {
@@ -717,7 +708,6 @@ app.get('/api/public/interview-config', async (req, res) => {
       });
     }
     
-    // Return the config from database
     const publicConfig = {
       categories: config.categories || [],
       levels: config.levels || [],
@@ -742,23 +732,24 @@ app.post('/api/interview/stats', authenticateUser, async (req, res) => {
   try {
     const userId = req.user?.id || req.user?._id;
     
-    // Try to fetch from AI backend first, but fallback to MongoDB
-    try {
-      const AI_BACKEND_URL = process.env.AI_BACKEND_URL || `${BASE_URL}`;
-      
-      const response = await fetch(`${AI_BACKEND_URL}/interview/stats`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId }),
-        timeout: 5000 // 5 second timeout
-      });
+    // Try to fetch from AI backend if configured
+    const AI_BACKEND_URL = process.env.AI_BACKEND_URL;
+    if (AI_BACKEND_URL) {
+      try {
+        const response = await fetch(`${AI_BACKEND_URL}/interview/stats`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId }),
+          timeout: 5000
+        });
 
-      if (response.ok) {
-        const data = await response.json();
-        return res.json(data);
+        if (response.ok) {
+          const data = await response.json();
+          return res.json(data);
+        }
+      } catch (aiError) {
+        console.log('AI Backend not available, falling back to MongoDB:', aiError.message);
       }
-    } catch (aiError) {
-      console.log('AI Backend not available, falling back to MongoDB:', aiError.message);
     }
 
     // Fallback: Fetch interviews from MongoDB directly
@@ -766,7 +757,6 @@ app.post('/api/interview/stats', authenticateUser, async (req, res) => {
     
     const interviews = await Interview.find({ userId }).sort({ createdAt: -1 });
     
-    // Calculate stats
     const totalInterviews = interviews.length;
     
     let avgScore = 0;
@@ -784,9 +774,8 @@ app.post('/api/interview/stats', authenticateUser, async (req, res) => {
       }
     }
     
-    const hoursPracticed = totalInterviews * 0.5; // 30 minutes per interview
+    const hoursPracticed = totalInterviews * 0.5;
     
-    // Get recent interviews (last 5)
     const recentInterviews = interviews.slice(0, 5).map(interview => ({
       role: interview.role || interview.position || 'Interview',
       score: interview.score || 0,
@@ -876,7 +865,7 @@ app.get('/', (req, res) => {
 });
 
 // =======================
-// 404 HANDLER (must be after all routes)
+// 404 HANDLER
 // =======================
 app.use((req, res) => {
   console.log(`404 - Route not found: ${req.method} ${req.url}`);
@@ -908,7 +897,7 @@ app.use((err, req, res, next) => {
 });
 
 // =======================
-// SOCKET.IO SETUP - CORS UPDATED
+// SOCKET.IO SETUP
 // =======================
 const server = http.createServer(app);
 
@@ -917,7 +906,7 @@ const io = new Server(server, {
     origin: [
       "http://localhost:5173", 
       "http://localhost:3000",
-      "https://ai-interview-two-kohl.vercel.app"   // ✅ your Vercel domain added
+      "https://ai-interview-two-kohl.vercel.app"
     ],
     methods: ["GET", "POST"],
     credentials: true
@@ -973,7 +962,7 @@ server.on('error', (error) => {
   }
 });
 
-// Handle unhandled promise rejections
+// Handle unhandled rejections
 process.on('unhandledRejection', (error) => {
   console.error('Unhandled Rejection:', error);
 });
