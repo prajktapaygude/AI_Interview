@@ -1193,7 +1193,7 @@
 // export default SignUp;
 
 
-import BASE_URL from '../config';   // make sure this path is correct
+import BASE_URL from './config';   // make sure this path is correct
 
 export const registerUser = async (userData) => {
   const response = await fetch(`${BASE_URL}/api/auth/signup`, {
