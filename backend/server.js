@@ -518,7 +518,7 @@ const http = require("http");
 // CREATE APP FIRST
 // =======================
 const app = express();
-const AI_BACKEND_URL = process.env.AI_BACKEND_URL || 'http://localhost:8000';
+const AI_BACKEND_URL = process.env.AI_BACKEND_URL || `${BASE_URL}`;
 
 // =======================
 // DB CONNECTION
@@ -727,7 +727,7 @@ app.post('/api/interview/stats', authenticateUser, async (req, res) => {
     
     // Try to fetch from AI backend first, but fallback to MongoDB
     try {
-      const AI_BACKEND_URL = process.env.AI_BACKEND_URL || 'http://localhost:8000';
+      const AI_BACKEND_URL = process.env.AI_BACKEND_URL || `${BASE_URL}`;
       
       const response = await fetch(`${AI_BACKEND_URL}/interview/stats`, {
         method: 'POST',
