@@ -1,3 +1,4 @@
+
 // require('dotenv').config();
 // console.log('🔍 ENVIRONMENT VARIABLES CHECK:');
 // console.log('GEMINI_API_KEY:', process.env.GEMINI_API_KEY ? '✅ FOUND (starts with: ' + process.env.GEMINI_API_KEY.substring(0, 15) + '...)' : '❌ NOT FOUND');
@@ -12,18 +13,18 @@
 // const chatRoutes = require('./routes/chat');
 // const { router: authRoutes, authenticateUser } = require('./routes/auth');
 // const { initPassport } = require('./config/passport');
-// initPassport();
-// app.use(passport.initialize());
 // const { router: adminAuthRoutes } = require("./routes/adminAuth");
 // const adminResourcesRoutes = require("./routes/adminResources");
 // const adminStatsRoutes = require("./routes/adminStats");
 // const publicResources = require("./routes/publicResources");
-// const adminInterviewSessionsRoutes = require('./routes/adminInterviewRoutes');
 // const planRoutes = require('./routes/plans');
 // const paymentRoutes = require('./routes/payment');
 // const userRoutes = require('./routes/users');
+// const contactRoutes = require('./routes/contact');
+// const feedbackRoutes = require('./routes/feedback');
 // const jobSearchRoutes = require('./routes/jobSearch');
-
+// const saveInterviewRoutes = require('./routes/saveInterview');
+// const adminInterviewRoutes = require('./routes/adminInterviewRoutes');
 // // Import new routes
 // const adminSubjectsRoutes = require("./routes/adminSubjects");
 // const resumeAnalyzerRoutes = require('./routes/resumeAnalyzer');
@@ -35,8 +36,11 @@
 // const { Server } = require("socket.io");
 // const http = require("http");
 
+// // =======================
+// // CREATE APP FIRST
+// // =======================
 // const app = express();
-// const AI_BACKEND_URL = process.env.AI_BACKEND_URL || 'http://localhost:8000';
+// const AI_BACKEND_URL = process.env.AI_BACKEND_URL || `${BASE_URL}`;
 
 // // =======================
 // // DB CONNECTION
@@ -74,7 +78,7 @@
 // });
 
 // // =======================
-// // SESSION + PASSPORT
+// // SESSION + PASSPORT (MOVED AFTER APP IS CREATED)
 // // =======================
 // app.use(session({
 //   secret: process.env.SESSION_SECRET || 'your_session_secret_key',
@@ -88,12 +92,17 @@
 //   }
 // }));
 
+// // ✅ Initialize Passport AFTER app is created
+// initPassport();
 // app.use(passport.initialize());
 // app.use(passport.session());
 
 // // CHATBOT ROUTES
 // app.use('/api/chat', chatRoutes);
-
+// //contact page routes
+// app.use('/api/contact', contactRoutes);
+// //feedback routes
+// app.use('/api/feedback', feedbackRoutes);
 // // =======================
 // // ROUTES - ORDER MATTERS!
 // // =======================
@@ -132,7 +141,7 @@
 // app.use('/api', resumeAnalyzerRoutes);
 
 // // ✅ INTERVIEW ROUTES - Mount config routes FIRST then sessions routes
-// console.log("🚀 adminInterviewSessionsRoutes:", adminInterviewSessionsRoutes);
+// console.log("🚀 adminInterviewSessionsRoutes:", adminInterviewRoutes);
 // console.log("🚀 adminInterviewConfigRoutes:", adminInterviewConfigRoutes);
 
 
@@ -141,8 +150,8 @@
 // app.use('/api/admin/interview', adminInterviewConfigRoutes);
 
 // // Mount sessions routes (these handle /sessions)
-// app.use('/api/admin/interview', adminInterviewSessionsRoutes);
-
+// app.use('/api/interview', saveInterviewRoutes);
+// app.use('/api/admin/interview', adminInterviewRoutes);
 // // Public resources
 // app.use("/api/resources", publicResources);
 
@@ -240,7 +249,7 @@
     
 //     // Try to fetch from AI backend first, but fallback to MongoDB
 //     try {
-//       const AI_BACKEND_URL = process.env.AI_BACKEND_URL || 'http://localhost:8000';
+//       const AI_BACKEND_URL = process.env.AI_BACKEND_URL || `${BASE_URL}`;
       
 //       const response = await fetch(`${AI_BACKEND_URL}/interview/stats`, {
 //         method: 'POST',
@@ -476,7 +485,6 @@
 // });
 
 
-
 require('dotenv').config();
 console.log('🔍 ENVIRONMENT VARIABLES CHECK:');
 console.log('GEMINI_API_KEY:', process.env.GEMINI_API_KEY ? '✅ FOUND (starts with: ' + process.env.GEMINI_API_KEY.substring(0, 15) + '...)' : '❌ NOT FOUND');
@@ -526,15 +534,30 @@ const AI_BACKEND_URL = process.env.AI_BACKEND_URL || `${BASE_URL}`;
 connectDB();
 
 // =======================
-// MIDDLEWARE
+// CORS CONFIGURATION - FIXED
 // =======================
+const allowedOrigins = [
+  'http://localhost:5173',                         // local development
+  'https://ai-interview-two-kohl.vercel.app',     // your Vercel frontend
+  // add any other domains you need (e.g., staging)
+];
+
 app.use(cors({
-  origin: 'http://localhost:5173',
+  origin: function (origin, callback) {
+    // allow requests with no origin (like mobile apps or curl)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      console.log('❌ Blocked by CORS:', origin);
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true,
   optionsSuccessStatus: 200
-})); 
+}));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -556,7 +579,7 @@ app.use((req, res, next) => {
 });
 
 // =======================
-// SESSION + PASSPORT (MOVED AFTER APP IS CREATED)
+// SESSION + PASSPORT
 // =======================
 app.use(session({
   secret: process.env.SESSION_SECRET || 'your_session_secret_key',
@@ -585,7 +608,7 @@ app.use('/api/feedback', feedbackRoutes);
 // ROUTES - ORDER MATTERS!
 // =======================
 
-// Health check endpoint (useful for debugging)
+// Health check endpoint
 app.get('/api/health', (req, res) => {
   res.json({ 
     status: 'OK', 
@@ -618,10 +641,9 @@ app.use("/api/admin", require('./routes/adminUsers'));
 app.use("/api/admin", require('./routes/adminAdmins'));
 app.use('/api', resumeAnalyzerRoutes);
 
-// ✅ INTERVIEW ROUTES - Mount config routes FIRST then sessions routes
+// ✅ INTERVIEW ROUTES
 console.log("🚀 adminInterviewSessionsRoutes:", adminInterviewRoutes);
 console.log("🚀 adminInterviewConfigRoutes:", adminInterviewConfigRoutes);
-
 
 app.use('/api/admin', adminAnalyticsRoutes);
 // Mount config routes (these handle /config, /categories, /levels, etc.)
@@ -639,12 +661,6 @@ app.use('/api/plans', planRoutes);
 app.use('/api/user', userRoutes);
 app.use('/api', jobSearchRoutes);
 
-
-// =======================
-// PUBLIC INTERVIEW CONFIGURATION FOR CANDIDATES
-// =======================
-
-// Add this after your other routes, before the 404 handler
 // =======================
 // PUBLIC INTERVIEW CONFIGURATION FOR CANDIDATES
 // =======================
@@ -717,6 +733,7 @@ app.get('/api/public/interview-config', async (req, res) => {
     res.status(500).json({ error: 'Failed to load interview configuration' });
   }
 });
+
 // =======================
 // AI BACKEND PROXY & INTERVIEW STATS
 // =======================
@@ -891,13 +908,17 @@ app.use((err, req, res, next) => {
 });
 
 // =======================
-// SOCKET.IO SETUP
+// SOCKET.IO SETUP - CORS UPDATED
 // =======================
 const server = http.createServer(app);
 
 const io = new Server(server, {
   cors: {
-    origin: ["http://localhost:5173", "http://localhost:3000"],
+    origin: [
+      "http://localhost:5173", 
+      "http://localhost:3000",
+      "https://ai-interview-two-kohl.vercel.app"   // ✅ your Vercel domain added
+    ],
     methods: ["GET", "POST"],
     credentials: true
   }
