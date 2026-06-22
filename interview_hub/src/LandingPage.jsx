@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Typewriter } from 'react-simple-typewriter';
-import ChatWidget from "./ChatWidget";
 import BASE_URL from "./config";
 
 function LandingPage() {
