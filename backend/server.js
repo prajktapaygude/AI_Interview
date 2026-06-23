@@ -847,6 +847,50 @@ app.post('/api/interview/save', authenticateUser, async (req, res) => {
   }
 });
 
+
+// =======================
+// AI QUESTION GENERATION (CONNECT TO PYTHON BACKEND)
+// =======================
+app.post('/api/generate-question', async (req, res) => {
+  try {
+    const AI_BACKEND_URL =
+      process.env.AI_BACKEND_URL || "https://ai-interview-1-nh5l.onrender.com";
+
+    console.log("📡 Calling AI backend:", AI_BACKEND_URL);
+
+    const response = await fetch(`${AI_BACKEND_URL}/generate`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(req.body),
+    });
+
+    const text = await response.text();
+
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch (err) {
+      console.error("❌ Invalid JSON from AI backend:", text);
+      return res.status(500).json({
+        success: false,
+        message: "Invalid response from AI server",
+        raw: text,
+      });
+    }
+
+    res.json(data);
+
+  } catch (error) {
+    console.error("❌ Error connecting to AI backend:", error.message);
+    res.status(500).json({
+      success: false,
+      message: "AI generation failed",
+    });
+  }
+});
+
 // =======================
 // ROOT ENDPOINT
 // =======================
