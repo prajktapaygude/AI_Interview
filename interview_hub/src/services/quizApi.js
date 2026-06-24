@@ -143,10 +143,10 @@ export const submitAdminTest = async (testId, answers, timeSpent, token) => {
   }
 };
 
-// NEW: Fetch all available tests for user
+// ✅ FIXED: Fetch all available tests for user
 export const fetchAvailableTests = async (token) => {
   try {
-    const response = await fetch( {
+    const response = await fetch(`${BACKEND_API_URL}/api/user/tests`, {
       headers: {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json'
