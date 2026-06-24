@@ -4,11 +4,14 @@
 // console.log('GEMINI_API_KEY:', process.env.GEMINI_API_KEY ? '✅ FOUND (starts with: ' + process.env.GEMINI_API_KEY.substring(0, 15) + '...)' : '❌ NOT FOUND');
 // console.log('Current directory:', process.cwd());
 // console.log('.env file path:', require('path').resolve('./.env'));
-
+// //----
+// const { sendVerificationEmail } = require('./services/emailService');
+// //----
 // const express = require('express');
 // const cors = require('cors');
 // const session = require('express-session');
 // const passport = require('passport');
+// const axios = require('axios');
 // const connectDB = require('./config/db');
 // const chatRoutes = require('./routes/chat');
 // const { router: authRoutes, authenticateUser } = require('./routes/auth');
@@ -25,11 +28,9 @@
 // const jobSearchRoutes = require('./routes/jobSearch');
 // const saveInterviewRoutes = require('./routes/saveInterview');
 // const adminInterviewRoutes = require('./routes/adminInterviewRoutes');
-// // Import new routes
 // const adminSubjectsRoutes = require("./routes/adminSubjects");
 // const resumeAnalyzerRoutes = require('./routes/resumeAnalyzer');
 // const testRoutes = require("./routes/tests");
-// // Interview Configuration routes
 // const adminInterviewConfigRoutes = require('./routes/adminInterviewConfigRoutes'); 
 // const adminAnalyticsRoutes = require('./routes/adminAnalytics');
 
@@ -40,7 +41,6 @@
 // // CREATE APP FIRST
 // // =======================
 // const app = express();
-// const AI_BACKEND_URL = process.env.AI_BACKEND_URL || `${BASE_URL}`;
 
 // // =======================
 // // DB CONNECTION
@@ -48,15 +48,28 @@
 // connectDB();
 
 // // =======================
-// // MIDDLEWARE
+// // CORS CONFIGURATION
 // // =======================
+// const allowedOrigins = [
+//   'http://localhost:5173',
+//   'https://ai-interview-two-kohl.vercel.app',
+// ];
+
 // app.use(cors({
-//   origin: 'http://localhost:5173',
+//   origin: function (origin, callback) {
+//     if (!origin) return callback(null, true);
+//     if (allowedOrigins.indexOf(origin) !== -1) {
+//       callback(null, true);
+//     } else {
+//       console.log('❌ Blocked by CORS:', origin);
+//       callback(new Error('Not allowed by CORS'));
+//     }
+//   },
 //   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
 //   allowedHeaders: ['Content-Type', 'Authorization'],
 //   credentials: true,
 //   optionsSuccessStatus: 200
-// })); 
+// }));
 
 // app.use(express.json());
 // app.use(express.urlencoded({ extended: true }));
@@ -66,6 +79,56 @@
 //   console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
 //   next();
 // });
+
+// // ============================================
+// // 🚀 PROXY AI ROUTES TO PYTHON BACKEND (JSON endpoints)
+// // ============================================
+// const PYTHON_AI_URL = process.env.AI_BACKEND_URL || 'http://localhost:8000';
+
+// const proxyToPython = async (req, res, endpoint) => {
+//   try {
+//     const response = await axios.post(`${PYTHON_AI_URL}${endpoint}`, req.body, {
+//       headers: { 'Content-Type': 'application/json' },
+//       timeout: 80000
+//     });
+//     res.json(response.data);
+//   } catch (err) {
+//     console.error(`❌ Proxy error to ${endpoint}:`, err.message);
+//     res.status(500).json({ error: err.message });
+//   }
+// };
+
+// // JSON endpoints
+// app.post('/evaluate', (req, res) => proxyToPython(req, res, '/evaluate'));
+// app.post('/generate-continuous-question', (req, res) => proxyToPython(req, res, '/generate-continuous-question'));
+// app.post('/batch-evaluate', (req, res) => proxyToPython(req, res, '/batch-evaluate'));
+// app.post('/analyze-report', (req, res) => proxyToPython(req, res, '/analyze-report'));
+// app.post('/generate-questions', (req, res) => proxyToPython(req, res, '/generate-questions'));
+
+// // ============================================
+// // 🎧 TTS PROXY – handles binary audio stream
+// // ============================================
+// app.post('/tts', async (req, res) => {
+//   try {
+//     const pythonUrl = process.env.AI_BACKEND_URL || 'http://localhost:8000';
+//     const response = await axios({
+//       method: 'post',
+//       url: `${pythonUrl}/tts`,
+//       data: req.body,
+//       headers: { 'Content-Type': 'application/json' },
+//       responseType: 'stream',
+//       timeout: 60000  // 60 seconds for TTS (audio generation can be slow)
+//     });
+//     // Forward the audio stream with correct headers
+//     res.setHeader('Content-Type', response.headers['content-type'] || 'audio/mpeg');
+//     response.data.pipe(res);
+//   } catch (err) {
+//     console.error('❌ TTS proxy error:', err.message);
+//     res.status(500).json({ error: 'TTS failed' });
+//   }
+// });
+
+// // ============================================
 
 // // Security headers for tracking prevention
 // app.use((req, res, next) => {
@@ -78,7 +141,7 @@
 // });
 
 // // =======================
-// // SESSION + PASSPORT (MOVED AFTER APP IS CREATED)
+// // SESSION + PASSPORT
 // // =======================
 // app.use(session({
 //   secret: process.env.SESSION_SECRET || 'your_session_secret_key',
@@ -92,22 +155,20 @@
 //   }
 // }));
 
-// // ✅ Initialize Passport AFTER app is created
 // initPassport();
 // app.use(passport.initialize());
 // app.use(passport.session());
 
 // // CHATBOT ROUTES
 // app.use('/api/chat', chatRoutes);
-// //contact page routes
 // app.use('/api/contact', contactRoutes);
-// //feedback routes
 // app.use('/api/feedback', feedbackRoutes);
+
 // // =======================
-// // ROUTES - ORDER MATTERS!
+// // ROUTES
 // // =======================
 
-// // Health check endpoint (useful for debugging)
+// // Health check endpoint
 // app.get('/api/health', (req, res) => {
 //   res.json({ 
 //     status: 'OK', 
@@ -121,16 +182,32 @@
 //   });
 // });
 
+
+// //-------------fjsdkfjasklf
+// app.get('/test-email', async (req, res) => {
+//   try {
+//     const result = await sendVerificationEmail(
+//       process.env.EMAIL_USER, // sends to your own email
+//       'test-token-123'
+//     );
+//     res.json({ success: true, messageId: result.messageId });
+//   } catch (err) {
+//     console.error('Test email error:', err);
+//     res.status(500).json({ error: err.message, details: err.response || err });
+//   }
+// });
+// //-------------fkasjfskdjf---------------
+
 // // User auth routes
 // app.use('/api/auth', authRoutes);
 
 // // Admin auth routes
 // app.use("/api/admin/auth", adminAuthRoutes);
 
-// // Subject routes (mounted at /api/admin)
+// // Subject routes
 // app.use("/api/admin", adminSubjectsRoutes);
 
-// // Test routes (mounted at /api - handles both /api/admin/tests and /api/user/tests)
+// // Test routes
 // app.use("/api", testRoutes);
 
 // // Existing admin routes
@@ -140,18 +217,12 @@
 // app.use("/api/admin", require('./routes/adminAdmins'));
 // app.use('/api', resumeAnalyzerRoutes);
 
-// // ✅ INTERVIEW ROUTES - Mount config routes FIRST then sessions routes
-// console.log("🚀 adminInterviewSessionsRoutes:", adminInterviewRoutes);
-// console.log("🚀 adminInterviewConfigRoutes:", adminInterviewConfigRoutes);
-
-
+// // Interview routes
 // app.use('/api/admin', adminAnalyticsRoutes);
-// // Mount config routes (these handle /config, /categories, /levels, etc.)
 // app.use('/api/admin/interview', adminInterviewConfigRoutes);
-
-// // Mount sessions routes (these handle /sessions)
 // app.use('/api/interview', saveInterviewRoutes);
 // app.use('/api/admin/interview', adminInterviewRoutes);
+
 // // Public resources
 // app.use("/api/resources", publicResources);
 
@@ -161,12 +232,6 @@
 // app.use('/api/user', userRoutes);
 // app.use('/api', jobSearchRoutes);
 
-
-// // =======================
-// // PUBLIC INTERVIEW CONFIGURATION FOR CANDIDATES
-// // =======================
-
-// // Add this after your other routes, before the 404 handler
 // // =======================
 // // PUBLIC INTERVIEW CONFIGURATION FOR CANDIDATES
 // // =======================
@@ -176,8 +241,7 @@
 //     let config = await InterviewConfig.findOne();
     
 //     if (!config) {
-//       console.log('No config found in database, returning mock data');
-//       // Return mock data from your MOCK_CONFIG
+//       console.log('No config found, returning mock data');
 //       return res.json({
 //         categories: [
 //           {
@@ -223,7 +287,6 @@
 //       });
 //     }
     
-//     // Return the config from database
 //     const publicConfig = {
 //       categories: config.categories || [],
 //       levels: config.levels || [],
@@ -239,6 +302,7 @@
 //     res.status(500).json({ error: 'Failed to load interview configuration' });
 //   }
 // });
+
 // // =======================
 // // AI BACKEND PROXY & INTERVIEW STATS
 // // =======================
@@ -247,31 +311,29 @@
 //   try {
 //     const userId = req.user?.id || req.user?._id;
     
-//     // Try to fetch from AI backend first, but fallback to MongoDB
-//     try {
-//       const AI_BACKEND_URL = process.env.AI_BACKEND_URL || `${BASE_URL}`;
-      
-//       const response = await fetch(`${AI_BACKEND_URL}/interview/stats`, {
-//         method: 'POST',
-//         headers: { 'Content-Type': 'application/json' },
-//         body: JSON.stringify({ userId }),
-//         timeout: 5000 // 5 second timeout
-//       });
+//     const AI_BACKEND_URL = process.env.AI_BACKEND_URL;
+//     if (AI_BACKEND_URL) {
+//       try {
+//         const response = await fetch(`${AI_BACKEND_URL}/interview/stats`, {
+//           method: 'POST',
+//           headers: { 'Content-Type': 'application/json' },
+//           body: JSON.stringify({ userId }),
+//           timeout: 5000
+//         });
 
-//       if (response.ok) {
-//         const data = await response.json();
-//         return res.json(data);
+//         if (response.ok) {
+//           const data = await response.json();
+//           return res.json(data);
+//         }
+//       } catch (aiError) {
+//         console.log('AI Backend not available, falling back to MongoDB:', aiError.message);
 //       }
-//     } catch (aiError) {
-//       console.log('AI Backend not available, falling back to MongoDB:', aiError.message);
 //     }
 
-//     // Fallback: Fetch interviews from MongoDB directly
 //     const Interview = require('./models/Interview');
     
 //     const interviews = await Interview.find({ userId }).sort({ createdAt: -1 });
     
-//     // Calculate stats
 //     const totalInterviews = interviews.length;
     
 //     let avgScore = 0;
@@ -289,9 +351,8 @@
 //       }
 //     }
     
-//     const hoursPracticed = totalInterviews * 0.5; // 30 minutes per interview
+//     const hoursPracticed = totalInterviews * 0.5;
     
-//     // Get recent interviews (last 5)
 //     const recentInterviews = interviews.slice(0, 5).map(interview => ({
 //       role: interview.role || interview.position || 'Interview',
 //       score: interview.score || 0,
@@ -364,6 +425,49 @@
 // });
 
 // // =======================
+// // AI QUESTION GENERATION (CONNECT TO PYTHON BACKEND)
+// // =======================
+// app.post('/api/generate-question', async (req, res) => {
+//   try {
+//     const AI_BACKEND_URL =
+//       process.env.AI_BACKEND_URL || "https://ai-interview-1-nh5l.onrender.com";
+
+//     console.log("📡 Calling AI backend:", AI_BACKEND_URL);
+
+//     const response = await fetch(`${AI_BACKEND_URL}/generate`, {
+//       method: 'POST',
+//       headers: {
+//         'Content-Type': 'application/json',
+//       },
+//       body: JSON.stringify(req.body),
+//     });
+
+//     const text = await response.text();
+
+//     let data;
+//     try {
+//       data = JSON.parse(text);
+//     } catch (err) {
+//       console.error("❌ Invalid JSON from AI backend:", text);
+//       return res.status(500).json({
+//         success: false,
+//         message: "Invalid response from AI server",
+//         raw: text,
+//       });
+//     }
+
+//     res.json(data);
+
+//   } catch (error) {
+//     console.error("❌ Error connecting to AI backend:", error.message);
+//     res.status(500).json({
+//       success: false,
+//       message: "AI generation failed",
+//     });
+//   }
+// });
+
+// // =======================
 // // ROOT ENDPOINT
 // // =======================
 // app.get('/', (req, res) => {
@@ -381,7 +485,7 @@
 // });
 
 // // =======================
-// // 404 HANDLER (must be after all routes)
+// // 404 HANDLER
 // // =======================
 // app.use((req, res) => {
 //   console.log(`404 - Route not found: ${req.method} ${req.url}`);
@@ -419,7 +523,11 @@
 
 // const io = new Server(server, {
 //   cors: {
-//     origin: ["http://localhost:5173", "http://localhost:3000"],
+//     origin: [
+//       "http://localhost:5173", 
+//       "http://localhost:3000",
+//       "https://ai-interview-two-kohl.vercel.app"
+//     ],
 //     methods: ["GET", "POST"],
 //     credentials: true
 //   }
@@ -474,7 +582,7 @@
 //   }
 // });
 
-// // Handle unhandled promise rejections
+// // Handle unhandled rejections
 // process.on('unhandledRejection', (error) => {
 //   console.error('Unhandled Rejection:', error);
 // });
@@ -538,15 +646,21 @@ const app = express();
 connectDB();
 
 // =======================
-// CORS CONFIGURATION
+// CORS CONFIGURATION (DYNAMIC)
 // =======================
+// Get frontend URL from environment, fallback for local dev
+const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
 const allowedOrigins = [
+  frontendUrl,
   'http://localhost:5173',
-  'https://ai-interview-two-kohl.vercel.app',
-];
+  'http://localhost:3000'
+].filter(Boolean); // remove undefined
+
+console.log('✅ CORS allowed origins:', allowedOrigins);
 
 app.use(cors({
   origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps, Postman)
     if (!origin) return callback(null, true);
     if (allowedOrigins.indexOf(origin) !== -1) {
       callback(null, true);
@@ -1011,13 +1125,10 @@ app.use((err, req, res, next) => {
 // =======================
 const server = http.createServer(app);
 
+// Use the same dynamic origin for Socket.io
 const io = new Server(server, {
   cors: {
-    origin: [
-      "http://localhost:5173", 
-      "http://localhost:3000",
-      "https://ai-interview-two-kohl.vercel.app"
-    ],
+    origin: allowedOrigins, // reuse the same allowed origins
     methods: ["GET", "POST"],
     credentials: true
   }
