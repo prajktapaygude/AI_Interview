@@ -122,7 +122,7 @@ export const fetchAdminTest = async (testId, token) => {
 // NEW: Submit admin test
 export const submitAdminTest = async (testId, answers, timeSpent, token) => {
   try {
-    const response = await fetch(`${BACKEND_API_URL}/user/tests/${testId}/submit`, {
+    const response = await fetch(`${BACKEND_API_URL}/api/user/tests/${testId}/submit`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -146,7 +146,7 @@ export const submitAdminTest = async (testId, answers, timeSpent, token) => {
 // NEW: Fetch all available tests for user
 export const fetchAvailableTests = async (token) => {
   try {
-    const response = await fetch(, {
+    const response = await fetch( {
       headers: {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json'
