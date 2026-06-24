@@ -18,7 +18,7 @@ const UserTests = () => {
   const fetchTests = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`${API_BASE_URL}api/user/tests`, {
+      const response = await fetch(`${API_BASE_URL}/user/tests`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'

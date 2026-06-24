@@ -59,7 +59,7 @@ const TakeTest = () => {
       
       console.log('📡 Fetching test with ID:', testId);
       
-      const response = await fetch(`${API_BASE_URL}/api/user/tests/${testId}`, {
+      const response = await fetch(`${API_BASE_URL}/user/tests/${testId}`, {
         headers: { 
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -105,7 +105,7 @@ const TakeTest = () => {
       
       if (questionIndex === -1) return;
       
-      await fetch(`${API_BASE_URL}/api/user/tests/${testId}/save-answer`, {
+      await fetch(`${API_BASE_URL}/user/tests/${testId}/save-answer`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -135,7 +135,7 @@ const TakeTest = () => {
       const token = localStorage.getItem('token');
       const answersArray = questions.map(q => answers[q._id] || null);
       
-      const response = await fetch(`${API_BASE_URL}/api/user/tests/${testId}/submit`, {
+      const response = await fetch(`${API_BASE_URL}/user/tests/${testId}/submit`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
