@@ -70,6 +70,7 @@ const transporter = nodemailer.createTransport({
     pass: process.env.EMAIL_PASS,
   },
   // Optional: Add debug logging for SMTP
+  family: 4,
   debug: true,
   logger: true,
 });
