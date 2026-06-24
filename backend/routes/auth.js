@@ -666,7 +666,7 @@ const crypto = require('crypto');
 const User = require('../models/User');
 
 // ✅ Import SendGrid email functions
-const { sendVerificationEmail, sendPasswordResetEmail } = require('../service/emailService');
+const { sendVerificationEmail, sendPasswordResetEmail } = require('../services/emailService');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret';
 
