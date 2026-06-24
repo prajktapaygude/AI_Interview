@@ -60,20 +60,23 @@
 
 const nodemailer = require('nodemailer');
 
-// Create transporter using environment variables
 const transporter = nodemailer.createTransport({
   host: process.env.EMAIL_HOST,
-  port: process.env.EMAIL_PORT,
-  secure: process.env.EMAIL_PORT == 587, // true for 465, false for other ports
+  port: 587,                     // STARTTLS
+  secure: false,                 // false for port 587
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
   },
-  // Optional: Add debug logging for SMTP
-  family: 4,
+  family: 4,                     // force IPv4
+  connectionTimeout: 10000,      // 10 seconds
+  greetingTimeout: 10000,
+  socketTimeout: 15000,
   debug: true,
   logger: true,
 });
+
+// ... keep the rest of your send functions unchanged
 
 /**
  * Send email verification link to user
