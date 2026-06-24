@@ -272,8 +272,12 @@ export const getStoredUser = () => {
   return user ? JSON.parse(user) : null;
 };
 
+// export const getStoredToken = () => {
+//   return localStorage.getItem('token');
+// };
+
 export const getStoredToken = () => {
-  return localStorage.getItem('token');
+  return localStorage.getItem('token') || localStorage.getItem('adminToken');
 };
 
 export const logoutUser = () => {

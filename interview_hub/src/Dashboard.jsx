@@ -1,3 +1,4 @@
+
 // import React, { useState, useEffect } from 'react';
 // import { useNavigate } from 'react-router-dom';
 // import ResumeAnalyzer from './components/ResumeAnalyzer';
@@ -11,6 +12,7 @@
 // import { useTheme } from "./ThemeContext";
 // import ThemeToggle from "./ThemeToggle";
 // import axios from 'axios';
+// import BASE_URL from './config';
 
 // const Dashboard = () => {
 //   const navigate = useNavigate();
@@ -79,7 +81,7 @@
 //   const fetchAvailablePlans = async () => {
 //     try {
 //       setLoadingPlans(true);
-//       const response = await axios.get('http://localhost:5000/api/plans/public/all');
+//       const response = await axios.get(`${BASE_URL}/api/plans/public/all`);
       
 //       if (response.data && response.data.success) {
 //         setAvailablePlans(response.data.plans);
@@ -95,7 +97,6 @@
 //       }
 //     } catch (err) {
 //       console.error('Failed to fetch plans for dashboard:', err);
-//       // Fallback to default plans if API fails
 //       setAvailablePlans([
 //         { _id: '1', name: 'Basic', price: 99, features: ['5 Mock Interviews per month', 'Basic Resume Analysis', 'MCQ Tests Access'], badge: 'none', isActive: true, description: 'Perfect for beginners' },
 //         { _id: '2', name: 'Pro', price: 299, features: ['Unlimited Mock Interviews', 'Advanced Resume Analysis', 'All MCQ Tests', 'Priority Support', 'Job Search Portal'], badge: 'popular', isActive: true, description: 'For serious job seekers' }
@@ -103,6 +104,34 @@
 //     } finally {
 //       setLoadingPlans(false);
 //     }
+//   };
+
+//   // Helper: safely check if a subscription has expired
+//   const isExpired = (expiryDateStr) => {
+//     if (!expiryDateStr) return true;
+//     const expiry = new Date(expiryDateStr);
+//     if (isNaN(expiry.getTime())) return true; // invalid date -> treat as expired
+//     const now = new Date();
+//     return expiry < now;
+//   };
+
+//   // Helper: check if expiring soon (within 5 days)
+//   const isExpiringSoon = (expiryDateStr) => {
+//     if (!expiryDateStr) return false;
+//     const expiry = new Date(expiryDateStr);
+//     if (isNaN(expiry.getTime())) return false;
+//     const now = new Date();
+//     const diffDays = Math.ceil((expiry - now) / (1000 * 60 * 60 * 24));
+//     return diffDays <= 5 && diffDays > 0;
+//   };
+
+//   // Format date for display
+//   const formatDate = (dateString) => {
+//     if (!dateString) return 'N/A';
+//     const date = new Date(dateString);
+//     if (isNaN(date.getTime())) return 'Invalid date';
+//     const options = { year: 'numeric', month: 'long', day: 'numeric' };
+//     return date.toLocaleDateString(undefined, options);
 //   };
 
 //   // Get plan details by name
@@ -116,7 +145,6 @@
 //         description: plan.description
 //       };
 //     }
-//     // Default values if plan not found
 //     if (planName === 'Basic') return { price: 99, features: [], badge: 'none', description: '' };
 //     if (planName === 'Pro') return { price: 299, features: [], badge: 'popular', description: '' };
 //     return { price: 0, features: [], badge: 'none', description: '' };
@@ -125,68 +153,54 @@
 //   const fetchSubscriptionStatus = async () => {
 //     setLoadingSubscription(true);
 //     try {
-//         const token = getStoredToken();
-//         if (!token) return;
-        
-//         const profileRes = await axios.get('http://localhost:5000/api/auth/profile', {
-//             headers: { Authorization: `Bearer ${token}` }
-//         });
-        
-//         const userMembershipFromProfile = profileRes.data.user.membership || 'Free';
-//         console.log('User membership from profile:', userMembershipFromProfile);
-        
-//         const res = await axios.get('http://localhost:5000/api/jobs/subscription-info', {
-//             headers: { Authorization: `Bearer ${token}` }
-//         });
-        
-//         console.log('Subscription info response:', res.data);
-        
-//         const membership = userMembershipFromProfile;
-//         setUserMembership(membership);
-        
-//         setHasResumeAccess(membership === 'Basic' || membership === 'Pro');
-//         setHasJobSearchAccess(membership === 'Pro');
-        
-//         if (res.data.activeSubscription) {
-//             setSubscription(res.data.activeSubscription);
-//         } else if (profileRes.data.user.subscriptionExpiryDate) {
-//             setSubscription({
-//                 plan: membership,
-//                 expiryDate: profileRes.data.user.subscriptionExpiryDate,
-//                 amount: membership === 'Pro' ? 299 : 99
-//             });
-//         } else {
-//             setSubscription(null);
-//         }
+//       const token = getStoredToken();
+//       if (!token) return;
+      
+//       // Fetch user profile (may contain membership string)
+//       const profileRes = await axios.get(`${BASE_URL}/api/auth/profile`, {
+//         headers: { Authorization: `Bearer ${token}` }
+//       });
+      
+//       // Fetch subscription info (contains expiry date and plan)
+//       const subsRes = await axios.get(`${BASE_URL}/api/jobs/subscription-info`, {
+//         headers: { Authorization: `Bearer ${token}` }
+//       });
+      
+//       let effectiveMembership = 'Free';
+//       let activeSub = subsRes.data.activeSubscription || null;
+      
+//       // Determine if there's a valid (non‑expired) subscription
+//       if (activeSub && activeSub.expiryDate && !isExpired(activeSub.expiryDate)) {
+//         effectiveMembership = activeSub.plan; // 'Basic' or 'Pro'
+//       } else {
+//         // No active subscription or it's expired
+//         effectiveMembership = 'Free';
+//         activeSub = null; // clear expired subscription from UI state
+//       }
+      
+//       // Update state
+//       setUserMembership(effectiveMembership);
+//       setHasResumeAccess(effectiveMembership === 'Basic' || effectiveMembership === 'Pro');
+//       setHasJobSearchAccess(effectiveMembership === 'Pro');
+//       setSubscription(activeSub);
+      
+//       // Sync localStorage user object
+//       const storedUser = getStoredUser();
+//       if (storedUser) {
+//         storedUser.membership = effectiveMembership;
+//         localStorage.setItem('user', JSON.stringify(storedUser));
+//       }
+      
 //     } catch (err) {
-//         console.error('Failed to fetch subscription:', err);
-//         const storedUser = getStoredUser();
-//         if (storedUser && storedUser.membership) {
-//             const membership = storedUser.membership;
-//             setUserMembership(membership);
-//             setHasResumeAccess(membership === 'Basic' || membership === 'Pro');
-//             setHasJobSearchAccess(membership === 'Pro');
-//         } else {
-//             setSubscription(null);
-//             setHasResumeAccess(false);
-//             setHasJobSearchAccess(false);
-//             setUserMembership('Free');
-//         }
+//       console.error('Failed to fetch subscription:', err);
+//       // Fallback to free plan on error
+//       setUserMembership('Free');
+//       setHasResumeAccess(false);
+//       setHasJobSearchAccess(false);
+//       setSubscription(null);
 //     } finally {
-//         setLoadingSubscription(false);
+//       setLoadingSubscription(false);
 //     }
-//   };
-
-//   const formatDate = (dateString) => {
-//     const options = { year: 'numeric', month: 'long', day: 'numeric' };
-//     return new Date(dateString).toLocaleDateString(undefined, options);
-//   };
-
-//   const isExpiringSoon = (expiryDateStr) => {
-//     const expiry = new Date(expiryDateStr);
-//     const now = new Date();
-//     const diffDays = Math.ceil((expiry - now) / (1000 * 60 * 60 * 24));
-//     return diffDays <= 5 && diffDays > 0;
 //   };
 
 //   const getPlanFeatures = (planName) => {
@@ -217,7 +231,6 @@
 //   const fetchUserStats = async (userId) => {
 //     try {
 //       setLoadingStats(true);
-      
 //       const token = getStoredToken();
 //       if (!token) {
 //         console.warn('No token found');
@@ -225,7 +238,7 @@
 //         return;
 //       }
       
-//       const response = await fetch('http://localhost:5000/api/interview/my-sessions', {
+//       const response = await fetch(`${BASE_URL}/api/interview/my-sessions`, {
 //         method: 'GET',
 //         headers: {
 //           'Authorization': `Bearer ${token}`,
@@ -496,7 +509,7 @@
 //   return (
 //     <div className="min-h-screen" style={{ backgroundColor: 'var(--color-bg-primary)' }}>
       
-//       {/* HEADER */}
+//       {/* HEADER (unchanged) */}
 //       <header className="fixed top-0 left-0 right-0 h-16 border-b z-30 flex items-center px-4 sm:px-6 shadow-sm"
 //               style={{ backgroundColor: 'var(--color-bg-secondary)', borderColor: 'var(--color-border)' }}>
 //         <div className="flex items-center justify-between w-full max-w-7xl mx-auto">
@@ -573,7 +586,7 @@
 //         </div>
 //       </header>
 
-//       {/* SIDEBAR */}
+//       {/* SIDEBAR (unchanged except subscription status block) */}
 //       <aside
 //         className={`fixed top-16 left-0 bottom-0 w-64 border-r transform transition-transform duration-300 ease-in-out z-20 lg:translate-x-0 overflow-y-auto ${
 //           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
@@ -754,8 +767,7 @@
 //                 </div>
 //               </div>
 
-
-//               {/* Enhanced Subscription Status Card */}
+//               {/* Enhanced Subscription Status Card with Expiry Handling */}
 //               {!loadingSubscription && (
 //                 <div className="rounded-xl border p-5 shadow-sm" style={{ backgroundColor: 'var(--color-bg-secondary)', borderColor: 'var(--color-border)' }}>
 //                   <div className="flex items-center justify-between flex-wrap gap-2 mb-3">
@@ -781,6 +793,7 @@
 //                   </div>
 
 //                   {subscription ? (
+//                     // Show subscription details only if not expired (subscription is non-null only when active)
 //                     <>
 //                       <div className="space-y-2 text-sm" style={{ color: 'var(--color-text-secondary)' }}>
 //                         <p><strong>Plan:</strong> <span className="font-semibold" style={{ color: 'var(--color-primary)' }}>{subscription.plan}</span></p>
@@ -802,9 +815,7 @@
 //                               <i className="fas fa-check-circle text-green-500 text-xs"></i> {feature}
 //                             </li>
 //                           ))}
-//                           {loadingPlans && (
-//                             <li className="text-gray-400">Loading features...</li>
-//                           )}
+//                           {loadingPlans && <li className="text-gray-400">Loading features...</li>}
 //                           {!loadingPlans && !availablePlans.find(p => p.name === subscription.plan) && (
 //                             getPlanFeatures(subscription.plan).map((feature, idx) => (
 //                               <li key={idx} className="flex items-center gap-1">
@@ -816,50 +827,67 @@
 //                       </div>
 //                     </>
 //                   ) : (
+//                     // No active subscription (or expired)
 //                     <div className="text-center py-4">
-//                       <p className="text-sm mb-3" style={{ color: 'var(--color-text-secondary)' }}>
-//                         You don't have an active subscription. Choose a plan:
-//                       </p>
-//                       <div className="grid grid-cols-2 gap-3 text-xs mt-3 max-w-md mx-auto">
-//                         {!loadingPlans && availablePlans.filter(p => p.isActive).map((plan) => (
-//                           <div key={plan._id} 
-//                                className={`p-3 rounded-lg border ${plan.badge === 'popular' ? 'border-primary shadow-md' : ''}`} 
-//                                style={{ borderColor: 'var(--color-border)' }}>
-//                             <div className="font-bold text-primary">{plan.name}</div>
-//                             <div className="text-lg font-bold">₹{plan.price}</div>
-//                             <div className="text-xs text-gray-500">/month</div>
-//                             <div className="mt-2 text-left">
-//                               {plan.features && plan.features.slice(0, 2).map((feature, idx) => (
-//                                 <div key={idx} className="flex items-center gap-1 text-xs mt-1">
-//                                   <i className="fas fa-check-circle text-green-500 text-xs"></i>
-//                                   <span className="truncate">{feature}</span>
+//                       {userMembership === 'Free' ? (
+//                         <>
+//                           <p className="text-sm mb-3" style={{ color: 'var(--color-text-secondary)' }}>
+//                             You don't have an active subscription. Choose a plan:
+//                           </p>
+//                           <div className="grid grid-cols-2 gap-3 text-xs mt-3 max-w-md mx-auto">
+//                             {!loadingPlans && availablePlans.filter(p => p.isActive).map((plan) => (
+//                               <div key={plan._id} 
+//                                    className={`p-3 rounded-lg border ${plan.badge === 'popular' ? 'border-primary shadow-md' : ''}`} 
+//                                    style={{ borderColor: 'var(--color-border)' }}>
+//                                 <div className="font-bold text-primary">{plan.name}</div>
+//                                 <div className="text-lg font-bold">₹{plan.price}</div>
+//                                 <div className="text-xs text-gray-500">/month</div>
+//                                 <div className="mt-2 text-left">
+//                                   {plan.features && plan.features.slice(0, 2).map((feature, idx) => (
+//                                     <div key={idx} className="flex items-center gap-1 text-xs mt-1">
+//                                       <i className="fas fa-check-circle text-green-500 text-xs"></i>
+//                                       <span className="truncate">{feature}</span>
+//                                     </div>
+//                                   ))}
+//                                   {plan.features && plan.features.length > 2 && (
+//                                     <div className="text-xs text-gray-500 mt-1">+{plan.features.length - 2} more</div>
+//                                   )}
 //                                 </div>
-//                               ))}
-//                               {plan.features && plan.features.length > 2 && (
-//                                 <div className="text-xs text-gray-500 mt-1">+{plan.features.length - 2} more</div>
-//                               )}
-//                             </div>
+//                               </div>
+//                             ))}
+//                             {loadingPlans && (
+//                               <div className="col-span-2 text-center py-4">
+//                                 <div className="animate-spin rounded-full h-6 w-6 border-2 border-primary border-t-transparent mx-auto"></div>
+//                                 <p className="text-xs mt-2">Loading plans...</p>
+//                               </div>
+//                             )}
 //                           </div>
-//                         ))}
-//                         {loadingPlans && (
-//                           <div className="col-span-2 text-center py-4">
-//                             <div className="animate-spin rounded-full h-6 w-6 border-2 border-primary border-t-transparent mx-auto"></div>
-//                             <p className="text-xs mt-2">Loading plans...</p>
-//                           </div>
-//                         )}
-//                       </div>
-//                       <button
-//                         onClick={() => handleMenuClick('premiumServices')}
-//                         className="mt-4 px-4 py-1.5 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg text-sm font-medium hover:scale-105 transition"
-//                       >
-//                         View All Subscription Plans
-//                       </button>
+//                           <button
+//                             onClick={() => handleMenuClick('premiumServices')}
+//                             className="mt-4 px-4 py-1.5 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg text-sm font-medium hover:scale-105 transition"
+//                           >
+//                             View All Subscription Plans
+//                           </button>
+//                         </>
+//                       ) : (
+//                         // This case should not happen because if userMembership is Basic/Pro, subscription should exist.
+//                         // But as a fallback, show renewal prompt.
+//                         <div className="text-red-600">
+//                           <p className="text-sm font-semibold">Your subscription has expired or is inactive.</p>
+//                           <button
+//                             onClick={() => handleMenuClick('premiumServices')}
+//                             className="mt-2 px-4 py-1 bg-red-600 text-white rounded-lg text-sm"
+//                           >
+//                             Renew Now
+//                           </button>
+//                         </div>
+//                       )}
 //                     </div>
 //                   )}
 //                 </div>
 //               )}
 
-//               {/* Stats Grid */}
+//               {/* Stats Grid (unchanged) */}
 //               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
 //                 {[
 //                   { label: 'Total Interviews', value: loadingStats ? '...' : stats.totalInterviews, icon: '📊', color: 'primary' },
@@ -882,7 +910,7 @@
 //                 ))}
 //               </div>
 
-//               {/* Recent Activity */}
+//               {/* Recent Activity (unchanged) */}
 //               <div className="rounded-xl border p-6" style={{ backgroundColor: 'var(--color-bg-secondary)', borderColor: 'var(--color-border)' }}>
 //                 <h2 className="text-lg font-semibold mb-4" style={{ color: 'var(--color-text-primary)' }}>Recent Activity</h2>
 //                 <div className="space-y-3">
@@ -968,6 +996,7 @@
 
 // export default Dashboard;
 
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ResumeAnalyzer from './components/ResumeAnalyzer';
@@ -1000,8 +1029,11 @@ const Dashboard = () => {
   const [showJobSearch, setShowJobSearch] = useState(false);
 
   const [user, setUser] = useState(null);
-  const token = getStoredToken();
-  const API_BASE_URL = '/api';
+  // ✅ FIX: Get token from both possible storage keys
+  const token = localStorage.getItem('token') || localStorage.getItem('adminToken');
+  // ✅ FIX: Use absolute backend URL with /api
+  const API_BASE_URL = `${BASE_URL}/api`;
+
   const [stats, setStats] = useState({
     totalInterviews: 0,
     avgScore: 0,
@@ -1275,6 +1307,7 @@ const Dashboard = () => {
 
   const fetchAvailableTests = async () => {
     try {
+      // ✅ Now uses API_BASE_URL = BASE_URL/api → correct absolute URL
       const response = await fetch(`${API_BASE_URL}/user/tests`, {
         headers: { 
           'Authorization': `Bearer ${token}`,
@@ -1478,7 +1511,7 @@ const Dashboard = () => {
   return (
     <div className="min-h-screen" style={{ backgroundColor: 'var(--color-bg-primary)' }}>
       
-      {/* HEADER (unchanged) */}
+      {/* HEADER */}
       <header className="fixed top-0 left-0 right-0 h-16 border-b z-30 flex items-center px-4 sm:px-6 shadow-sm"
               style={{ backgroundColor: 'var(--color-bg-secondary)', borderColor: 'var(--color-border)' }}>
         <div className="flex items-center justify-between w-full max-w-7xl mx-auto">
@@ -1555,7 +1588,7 @@ const Dashboard = () => {
         </div>
       </header>
 
-      {/* SIDEBAR (unchanged except subscription status block) */}
+      {/* SIDEBAR */}
       <aside
         className={`fixed top-16 left-0 bottom-0 w-64 border-r transform transition-transform duration-300 ease-in-out z-20 lg:translate-x-0 overflow-y-auto ${
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
