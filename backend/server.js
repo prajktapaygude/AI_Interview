@@ -495,7 +495,7 @@ console.log('GEMINI_API_KEY:', process.env.GEMINI_API_KEY ? '✅ FOUND (starts w
 console.log('Current directory:', process.cwd());
 console.log('.env file path:', require('path').resolve('./.env'));
 //----
-const { sendVerificationEmail } = require('./emailService');
+const { sendVerificationEmail } = require('./service/emailService');
 //----
 const express = require('express');
 const cors = require('cors');
