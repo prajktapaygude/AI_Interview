@@ -653,7 +653,8 @@ const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
 const allowedOrigins = [
   frontendUrl,
   'http://localhost:5173',
-  'http://localhost:3000'
+  'http://localhost:3000',
+    'https://test.payu.in'
 ].filter(Boolean); // remove undefined
 
 console.log('✅ CORS allowed origins:', allowedOrigins);
