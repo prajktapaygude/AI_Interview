@@ -484,6 +484,13 @@
 //   process.exit(1);
 // });
 
+
+
+
+
+
+
+
 require('dotenv').config();
 console.log('🔍 ENVIRONMENT VARIABLES CHECK:');
 console.log('GEMINI_API_KEY:', process.env.GEMINI_API_KEY ? '✅ FOUND (starts with: ' + process.env.GEMINI_API_KEY.substring(0, 15) + '...)' : '❌ NOT FOUND');
@@ -494,6 +501,7 @@ const express = require('express');
 const cors = require('cors');
 const session = require('express-session');
 const passport = require('passport');
+const axios = require('axios'); // ✅ ADDED for proxy calls
 const connectDB = require('./config/db');
 const chatRoutes = require('./routes/chat');
 const { router: authRoutes, authenticateUser } = require('./routes/auth');
@@ -510,11 +518,9 @@ const feedbackRoutes = require('./routes/feedback');
 const jobSearchRoutes = require('./routes/jobSearch');
 const saveInterviewRoutes = require('./routes/saveInterview');
 const adminInterviewRoutes = require('./routes/adminInterviewRoutes');
-// Import new routes
 const adminSubjectsRoutes = require("./routes/adminSubjects");
 const resumeAnalyzerRoutes = require('./routes/resumeAnalyzer');
 const testRoutes = require("./routes/tests");
-// Interview Configuration routes
 const adminInterviewConfigRoutes = require('./routes/adminInterviewConfigRoutes'); 
 const adminAnalyticsRoutes = require('./routes/adminAnalytics');
 
@@ -535,14 +541,12 @@ connectDB();
 // CORS CONFIGURATION - FIXED
 // =======================
 const allowedOrigins = [
-  'http://localhost:5173',                         // local development
-  'https://ai-interview-two-kohl.vercel.app',     // your Vercel frontend
-  // add any other domains you need
+  'http://localhost:5173',
+  'https://ai-interview-two-kohl.vercel.app',
 ];
 
 app.use(cors({
   origin: function (origin, callback) {
-    // allow requests with no origin (like mobile apps or curl)
     if (!origin) return callback(null, true);
     if (allowedOrigins.indexOf(origin) !== -1) {
       callback(null, true);
@@ -565,6 +569,34 @@ app.use((req, res, next) => {
   console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
   next();
 });
+
+// ============================================
+// 🚀 PROXY AI ROUTES TO PYTHON BACKEND (ADDED)
+// ============================================
+const PYTHON_AI_URL = process.env.AI_BACKEND_URL || 'http://localhost:8000';
+
+// Helper to forward POST requests to Python
+const proxyToPython = async (req, res, endpoint) => {
+  try {
+    const response = await axios.post(`${PYTHON_AI_URL}${endpoint}`, req.body, {
+      headers: { 'Content-Type': 'application/json' },
+      timeout: 30000  // 30 seconds for Python cold start
+    });
+    res.json(response.data);
+  } catch (err) {
+    console.error(`❌ Proxy error to ${endpoint}:`, err.message);
+    res.status(500).json({ error: err.message });
+  }
+};
+
+// The exact endpoints your frontend calls
+app.post('/evaluate', (req, res) => proxyToPython(req, res, '/evaluate'));
+app.post('/tts', (req, res) => proxyToPython(req, res, '/tts'));
+app.post('/generate-continuous-question', (req, res) => proxyToPython(req, res, '/generate-continuous-question'));
+app.post('/batch-evaluate', (req, res) => proxyToPython(req, res, '/batch-evaluate'));
+app.post('/analyze-report', (req, res) => proxyToPython(req, res, '/analyze-report'));
+app.post('/generate-questions', (req, res) => proxyToPython(req, res, '/generate-questions'));
+// ============================================
 
 // Security headers for tracking prevention
 app.use((req, res, next) => {
@@ -591,7 +623,6 @@ app.use(session({
   }
 }));
 
-// ✅ Initialize Passport
 initPassport();
 app.use(passport.initialize());
 app.use(passport.session());
@@ -732,7 +763,6 @@ app.post('/api/interview/stats', authenticateUser, async (req, res) => {
   try {
     const userId = req.user?.id || req.user?._id;
     
-    // Try to fetch from AI backend if configured
     const AI_BACKEND_URL = process.env.AI_BACKEND_URL;
     if (AI_BACKEND_URL) {
       try {
@@ -752,7 +782,6 @@ app.post('/api/interview/stats', authenticateUser, async (req, res) => {
       }
     }
 
-    // Fallback: Fetch interviews from MongoDB directly
     const Interview = require('./models/Interview');
     
     const interviews = await Interview.find({ userId }).sort({ createdAt: -1 });
@@ -846,7 +875,6 @@ app.post('/api/interview/save', authenticateUser, async (req, res) => {
     });
   }
 });
-
 
 // =======================
 // AI QUESTION GENERATION (CONNECT TO PYTHON BACKEND)
