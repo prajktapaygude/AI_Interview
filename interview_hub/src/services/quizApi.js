@@ -74,7 +74,7 @@ const tryFetchWithCategory = async (category, limit) => {
 // NEW: Fetch admin-created test
 export const fetchAdminTest = async (testId, token) => {
   try {
-    const response = await fetch(`${BACKEND_API_URL}/user/tests/${testId}`, {
+    const response = await fetch(`${BACKEND_API_URL}/api/user/tests/${testId}`, {
       headers: {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json'
@@ -146,7 +146,7 @@ export const submitAdminTest = async (testId, answers, timeSpent, token) => {
 // NEW: Fetch all available tests for user
 export const fetchAvailableTests = async (token) => {
   try {
-    const response = await fetch(`${BACKEND_API_URL}/user/tests`, {
+    const response = await fetch(, {
       headers: {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json'
