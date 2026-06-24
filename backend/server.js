@@ -489,8 +489,6 @@
 
 
 
-
-
 require('dotenv').config();
 console.log('🔍 ENVIRONMENT VARIABLES CHECK:');
 console.log('GEMINI_API_KEY:', process.env.GEMINI_API_KEY ? '✅ FOUND (starts with: ' + process.env.GEMINI_API_KEY.substring(0, 15) + '...)' : '❌ NOT FOUND');
@@ -501,7 +499,7 @@ const express = require('express');
 const cors = require('cors');
 const session = require('express-session');
 const passport = require('passport');
-const axios = require('axios'); // ✅ ADDED for proxy calls
+const axios = require('axios');
 const connectDB = require('./config/db');
 const chatRoutes = require('./routes/chat');
 const { router: authRoutes, authenticateUser } = require('./routes/auth');
@@ -538,7 +536,7 @@ const app = express();
 connectDB();
 
 // =======================
-// CORS CONFIGURATION - FIXED
+// CORS CONFIGURATION
 // =======================
 const allowedOrigins = [
   'http://localhost:5173',
@@ -571,16 +569,15 @@ app.use((req, res, next) => {
 });
 
 // ============================================
-// 🚀 PROXY AI ROUTES TO PYTHON BACKEND (ADDED)
+// 🚀 PROXY AI ROUTES TO PYTHON BACKEND (JSON endpoints)
 // ============================================
 const PYTHON_AI_URL = process.env.AI_BACKEND_URL || 'http://localhost:8000';
 
-// Helper to forward POST requests to Python
 const proxyToPython = async (req, res, endpoint) => {
   try {
     const response = await axios.post(`${PYTHON_AI_URL}${endpoint}`, req.body, {
       headers: { 'Content-Type': 'application/json' },
-      timeout: 80000  // 30 seconds for Python cold start
+      timeout: 80000
     });
     res.json(response.data);
   } catch (err) {
@@ -589,13 +586,36 @@ const proxyToPython = async (req, res, endpoint) => {
   }
 };
 
-// The exact endpoints your frontend calls
+// JSON endpoints
 app.post('/evaluate', (req, res) => proxyToPython(req, res, '/evaluate'));
-app.post('/tts', (req, res) => proxyToPython(req, res, '/tts'));
 app.post('/generate-continuous-question', (req, res) => proxyToPython(req, res, '/generate-continuous-question'));
 app.post('/batch-evaluate', (req, res) => proxyToPython(req, res, '/batch-evaluate'));
 app.post('/analyze-report', (req, res) => proxyToPython(req, res, '/analyze-report'));
 app.post('/generate-questions', (req, res) => proxyToPython(req, res, '/generate-questions'));
+
+// ============================================
+// 🎧 TTS PROXY – handles binary audio stream
+// ============================================
+app.post('/tts', async (req, res) => {
+  try {
+    const pythonUrl = process.env.AI_BACKEND_URL || 'http://localhost:8000';
+    const response = await axios({
+      method: 'post',
+      url: `${pythonUrl}/tts`,
+      data: req.body,
+      headers: { 'Content-Type': 'application/json' },
+      responseType: 'stream',
+      timeout: 60000  // 60 seconds for TTS (audio generation can be slow)
+    });
+    // Forward the audio stream with correct headers
+    res.setHeader('Content-Type', response.headers['content-type'] || 'audio/mpeg');
+    response.data.pipe(res);
+  } catch (err) {
+    console.error('❌ TTS proxy error:', err.message);
+    res.status(500).json({ error: 'TTS failed' });
+  }
+});
+
 // ============================================
 
 // Security headers for tracking prevention
