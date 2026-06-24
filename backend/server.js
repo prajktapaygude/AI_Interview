@@ -494,7 +494,9 @@ console.log('🔍 ENVIRONMENT VARIABLES CHECK:');
 console.log('GEMINI_API_KEY:', process.env.GEMINI_API_KEY ? '✅ FOUND (starts with: ' + process.env.GEMINI_API_KEY.substring(0, 15) + '...)' : '❌ NOT FOUND');
 console.log('Current directory:', process.cwd());
 console.log('.env file path:', require('path').resolve('./.env'));
-
+//----
+const { sendVerificationEmail } = require('./emailService');
+//----
 const express = require('express');
 const cors = require('cors');
 const session = require('express-session');
@@ -669,6 +671,22 @@ app.get('/api/health', (req, res) => {
     }
   });
 });
+
+
+//-------------fjsdkfjasklf
+app.get('/test-email', async (req, res) => {
+  try {
+    const result = await sendVerificationEmail(
+      process.env.EMAIL_USER, // sends to your own email
+      'test-token-123'
+    );
+    res.json({ success: true, messageId: result.messageId });
+  } catch (err) {
+    console.error('Test email error:', err);
+    res.status(500).json({ error: err.message, details: err.response || err });
+  }
+});
+//-------------fkasjfskdjf---------------
 
 // User auth routes
 app.use('/api/auth', authRoutes);
