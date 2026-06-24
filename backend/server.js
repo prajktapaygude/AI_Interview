@@ -580,7 +580,7 @@ const proxyToPython = async (req, res, endpoint) => {
   try {
     const response = await axios.post(`${PYTHON_AI_URL}${endpoint}`, req.body, {
       headers: { 'Content-Type': 'application/json' },
-      timeout: 30000  // 30 seconds for Python cold start
+      timeout: 80000  // 30 seconds for Python cold start
     });
     res.json(response.data);
   } catch (err) {
