@@ -132,7 +132,7 @@ const InterviewSetup = ({ onComplete }) => {
       return;
     }
     try {
-      const res = await fetch(`${API_BASE_URL}/public/interview-config`);
+      const res = await fetch(`${API_BASE_URL}/api/public/interview-config`);
       if (!res.ok) throw new Error('Failed to load configuration');
       const data = await res.json();
       setConfig(data);
