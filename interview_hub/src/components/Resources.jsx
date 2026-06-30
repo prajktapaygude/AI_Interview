@@ -91,9 +91,9 @@ const Resources = () => {
       
       params.append('sort', filters.sortBy);
 
-      console.log('Fetching resources from DB:', `${API_BASE_URL}/resources?${params.toString()}`);
+      console.log('Fetching resources from DB:', `${API_BASE_URL}/api/resources?${params.toString()}`);
 
-      const response = await fetch(`${API_BASE_URL}/resources?${params.toString()}`, {
+      const response = await fetch(`${API_BASE_URL}/api/resources?${params.toString()}`, {
         signal: abortController.signal,
         headers: {
           'Content-Type': 'application/json',
